@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doors</title>
+    <meta property="og:image" content="threedoors.png" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-container {
+            max-width: 100%;
+            max-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Ensure relative positioning */
+        }
+        .threedoors-image {
+            display: block; /* Initially visible */
+            max-width: 100%; /* Responsive */
+            max-height: 100vh; /* Responsive to viewport height */
+            object-fit: contain; /* Maintain aspect ratio */
+        }
+        /* Hide the animal images by default */
+        .animal-image {
+            display: none; /* Initially hidden */
+            max-width: 100%; /* Responsive */
+            max-height: 100vh; /* Responsive to viewport height */
+            object-fit: contain; /* Maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+
+<div class="image-container">
+
+    <!-- Three Doors Image with a defined map -->
+    <img id="threeDoorsImage" usemap="#threedoors-map" class="threedoors-image" href="#" width="1000" height="700">
+
+    <!-- Animal Images (hidden by default) each with the same defined map -->
+    <img id="stagImage" usemap="#stag-map" class="animal-image" href="#" width="1000" height="700">
+    <img id="owlImage" usemap="#owl-map" class="animal-image" href="#" width="1000" height="700">
+    <img id="foxImage" usemap="#fox-map" class="animal-image" href="#" width="1000" height="700">
+
+</div>
+
+<!-- Define the Three Doors image map with clickable regions -->
+<map name="threedoors-map" id="threedoors-map">
+    <!-- Define the shape and coordinates of each interactive region -->
+    <!-- Stag-->
+    <area shape="rect" coords="181,572,266,162" href="#" onclick="showImage('stagImage', 'stag.txt')">
+    <!-- Example: Owl -->
+    <area shape="rect" coords="604,452,416,127" href="#" onclick="showImage('owlImage', 'owl.txt')">
+    <!-- Example: Fox -->
+    <area shape="rect" coords="699,188,827,500" href="#" onclick="showImage('foxImage', 'fox.txt')">
+</map>
+
+<map name="stag-map" id="stag-map">
+    <!-- Return to ThreeDoors -->
+    <area shape="rect" coords="637,689,418,638" href="#" onclick="showImage('threeDoorsImage', 'threedoorsgif.txt')">
+</map>
+
+<map name="owl-map" id="owl-map">
+    <!-- Return to ThreeDoors -->
+    <area shape="rect" coords="637,689,418,638" href="#" onclick="showImage('threeDoorsImage', 'threedoorsgif.txt')">
+</map>
+
+<map name="fox-map" id="fox-map">
+    <!-- Return to ThreeDoors -->
+    <area shape="rect" coords="637,689,418,638" href="#" onclick="showImage('threeDoorsImage', 'threedoorsgif.txt')">
+</map>
+
+<script>
+
+    // Load the three doors image to begin with
+    loadBase64Image('threeDoorsImage', 'threedoorsgif.txt')
+
+    // Resize maps once it's loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        resizeMaps();
+    });
+
+    // Also resize maps on resize of page
+    window.addEventListener('resize', function() {
+        resizeMaps();
+    });
+    
+
+    function showImage(imageId, textFilePath) {
+        // Hide all images
+        hideImages();
+        
+        // Show the selected image
+        const imageToShow = document.getElementById(imageId);
+        if (imageToShow) {
+            imageToShow.style.display = 'block';
+
+            imageToShow.onload = () => {
+                // Access natural dimensions
+                const naturalWidth = imageToShow.naturalWidth;
+                const naturalHeight = imageToShow.naturalHeight;
+            };
+
+            // Now load from src, essential for it to display
+            loadBase64Image(imageId, textFilePath);
+
+        // Update the active map
+        const mapName = imageToShow.getAttribute('usemap');
+        if (mapName) {
+            // Remove the '#' from the beginning of the map name
+            const mapId = mapName.substring(1);
+            const map = document.getElementById(mapId);
+            if (map) {
+                // Deactivate all maps
+                document.querySelectorAll('map').forEach(m => m.style.display = 'none');
+                // Activate the correct map
+                map.style.display = 'block';
+                
+                // Resize the maps to fit the new image
+                resizeMaps();
+            }
+        }
+        } else {
+            console.error(`Image with id "${imageId}" not found`);
+        }
+    }
+
+    function hideImages() {
+        const images = document.querySelectorAll('.animal-image, #threeDoorsImage');
+        images.forEach(image => {
+            image.style.display = 'none'; // Hide all possible images
+        });
+    }
+
+    function resizeMaps() {
+    const images = document.querySelectorAll('.animal-image, #threeDoorsImage');
+    
+    images.forEach(img => {
+        if (img.offsetWidth > 0 && img.offsetHeight > 0 && img.style.display !== 'none') {
+            const mapName = img.getAttribute('usemap');
+            if (mapName) {
+                const mapId = mapName.substring(1);
+                const map = document.getElementById(mapId);
+
+                if (map) {
+                    
+                    const areas = map.getElementsByTagName('area');
+                    if (areas.length > 0) {
+                        const originalWidth = 1000; // Original width of the image
+                        const originalHeight = 700; // Original height of the image
+
+                        let actualWidth;
+                        let actualHeight;
+
+                        const asp_ratio = img.offsetHeight/img.offsetWidth
+                        // At correct aspect ratio, offsetHeight/offsetWidth = 0.7
+                        // When centred vertically, offsetHeight/offsetWidth > 0.7
+                        // When centred horizontally, offsetHeight/offsetWidth < 0.7
+
+                        if (asp_ratio >= 0.7){
+                        actualWidth = img.offsetWidth; // So code currently works only when width is 100% across the page
+                        actualHeight = img.offsetWidth*700/1000;
+                        }
+                        else {
+                        actualHeight = img.offsetHeight 
+                        actualWidth = img.offsetHeight*1000/700
+                        };
+
+                        const widthDiff = img.offsetWidth - actualWidth
+                        const heightDiff = img.offsetHeight - actualHeight
+
+                        const widthRatio = actualWidth / originalWidth;
+                        const heightRatio = actualHeight / originalHeight;
+
+                        // Use the smaller of the two ratios to preserve aspect ratio
+                        const scale = Math.min(widthRatio, heightRatio);
+
+                        for (let area of areas) {
+                            if (!area.hasAttribute('data-original-coords')) {
+                                area.setAttribute('data-original-coords', area.getAttribute('coords'));
+                            }
+                            const originalCoords = area.getAttribute('data-original-coords').split(',').map(Number);
+                            
+                            const newCoords = originalCoords.map((coord, index) => {
+                                const scaledCoord = Math.round(coord * scale);
+                                // Adjust for image offset if it's a horizontal coordinate (even index)
+                                if (index % 2 === 0) {
+                                    return scaledCoord + widthDiff/2;
+                                }
+                                // Adjust for image offset if it's a vertical coordinate (odd index)
+                                return scaledCoord + heightDiff/2;
+                            });
+                            
+                            area.setAttribute('coords', newCoords.join(','));
+                        }
+                    } else {
+                        console.log(`No areas found for map: ${mapName}`);
+                    }
+                }
+            }
+        }
+    });
+}
+    function loadBase64Image(imageId, textFilePath) {
+    return fetch(textFilePath)
+        .then(response => response.text())
+        .then(base64String => {
+            const img = document.getElementById(imageId);
+            return new Promise((resolve) => {
+                img.onload = () => resolve(img);
+                img.src = `${base64String}`;
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
